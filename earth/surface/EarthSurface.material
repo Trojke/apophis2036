@@ -1,0 +1,30 @@
+material EarthSurfaceMaterial
+{
+	technique
+	{		
+		pass Main
+		{
+			// base colours, not needed for rendering, but as information
+			// to lighting pass categorisation routine
+			ambient 0 0 0 
+			
+			//scene_blend add
+			
+			vertex_program_ref EarthSurfaceVP
+			{
+				param_named_auto world world_matrix
+				param_named_auto viewProj viewproj_matrix
+			}
+			
+			fragment_program_ref EarthSurfaceFP
+			{
+			}	
+
+			texture_unit
+			{
+				//texture earth-color.png 2d
+				cubic_texture earth_colourmap.png combinedUVW
+			}			
+		}
+	}
+}
