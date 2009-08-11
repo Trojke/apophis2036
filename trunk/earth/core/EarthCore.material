@@ -1,0 +1,38 @@
+material EarthCoreMaterial
+{
+	technique
+	{		
+		pass Main
+		{		
+			ambient 0 0 0 
+			
+			//scene_blend add
+			
+			vertex_program_ref EarthCoreVP
+			{
+				param_named_auto world world_matrix
+				param_named_auto viewProj viewproj_matrix
+			}
+			
+			fragment_program_ref EarthCoreFP
+			{
+				param_named textureMatrix matrix4x4 0.0625 0.0 0.0 0.0 0.0 0.0625 0.0 0.0 0.0 0.0 0.0625 0.0 0.0 0.0 0.0 1.0
+			}	
+
+			texture_unit
+			{
+				texture FractalNoise.png 2d
+			}	
+
+			texture_unit
+			{
+				texture EarthCoreInner.png 2d
+			}	
+
+			texture_unit
+			{
+				texture EarthCoreOuter.png 2d
+			}				
+		}
+	}
+}

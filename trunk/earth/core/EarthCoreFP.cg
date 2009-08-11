@@ -1,0 +1,46 @@
+#include "VertexFormats.cg"
+
+float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler2D noiseMap : TEXUNIT0, uniform sampler2D innerMap : TEXUNIT1, uniform sampler2D outerMap : TEXUNIT2, uniform float4x4 textureMatrix) : COLOR
+{		
+	float3 toCentre = float3(256.0f, 256.0f, 256.0f) - IN.TexCoords.xyz;
+	float distance = length(toCentre) / 256.0f;
+	
+	distance = 1.0f - distance;
+	distance *= distance;
+	//distance = 1.0f / distance;
+	
+	IN.TexCoords = mul(textureMatrix, IN.TexCoords);
+
+	IN.Normal *= IN.Normal; //Makes the components sum to 1
+	
+	//Retrieve the 3 samples
+	float noiseValueXY = tex2D(noiseMap, IN.TexCoords.xy).r * abs(IN.Normal.z);
+	float noiseValueYZ = tex2D(noiseMap, IN.TexCoords.yz).r * abs(IN.Normal.x);
+	float noiseValueXZ = tex2D(noiseMap, IN.TexCoords.xz).r * abs(IN.Normal.y);	
+	float noiseValue = noiseValueXY + noiseValueYZ + noiseValueXZ;
+	
+	//Retrieve the 3 samples
+	float3 innerValueXY = tex2D(innerMap, IN.TexCoords.xy).rgb * abs(IN.Normal.z);
+	float3 innerValueYZ = tex2D(innerMap, IN.TexCoords.yz).rgb * abs(IN.Normal.x);
+	float3 innerValueXZ = tex2D(innerMap, IN.TexCoords.xz).rgb * abs(IN.Normal.y);	
+	float3 innerValue = innerValueXY + innerValueYZ + innerValueXZ;
+	
+	//Retrieve the 3 samples
+	float3 outerValueXY = tex2D(outerMap, IN.TexCoords.xy).rgb * abs(IN.Normal.z);
+	float3 outerValueYZ = tex2D(outerMap, IN.TexCoords.yz).rgb * abs(IN.Normal.x);
+	float3 outerValueXZ = tex2D(outerMap, IN.TexCoords.xz).rgb * abs(IN.Normal.y);	
+	float3 outerValue = outerValueXY + outerValueYZ + outerValueXZ;
+	
+	noiseValue -= 0.5;
+	noiseValue = abs(noiseValue) * 2.0f;
+	
+	float4 colourMapValue;
+	if(noiseValue < distance)
+		colourMapValue = float4(innerValue, 1.0f);
+	else
+		colourMapValue = float4(outerValue, 1.0f);
+		
+	colourMapValue *= IN.DiffuseLightColor + ambientLightColor;
+	//colourMapValue *= IN.Material.y;
+	return colourMapValue;
+}
