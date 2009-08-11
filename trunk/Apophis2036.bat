@@ -1,2 +1,2 @@
 pushd ..\..\..\..\bin
-Thermite.exe apophis2036
+Thermite.exe --appname apophis2036
