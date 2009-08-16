@@ -49,7 +49,7 @@ float inoise(float3 p)
                              grad(perm(AA.w+one), p + float3(-1, -1, -1) ), f.x), f.y), f.z);
 }
 
-float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permutationMap : TEXUNIT0, uniform sampler1D gradientMap : TEXUNIT1, uniform sampler2D innerMap : TEXUNIT2, uniform sampler2D outerMap : TEXUNIT3, uniform float4x4 textureMatrix) : COLOR
+float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permutationMap : TEXUNIT0, uniform sampler1D gradientMap : TEXUNIT1, uniform sampler2D innerMap : TEXUNIT2, uniform sampler2D outerMap : TEXUNIT3, uniform float4x4 coreInnerTextureMatrix, uniform float4x4 coreOuterTextureMatrix, uniform float4x4 perlinNoiseTextureMatrix) : COLOR
 {		
 	permSampler = permutationMap;
 	gradSampler = gradientMap;
@@ -61,37 +61,39 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 	distance *= distance;
 	//distance = 1.0f / distance;
 	
-	IN.TexCoords = mul(textureMatrix, IN.TexCoords);
+	float4 coreInnerTexCoords = mul(coreInnerTextureMatrix, IN.TexCoords);
+	float4 coreOuterTexCoords = mul(coreOuterTextureMatrix, IN.TexCoords);
+	float4 perlinNoiseTexCoords = mul(perlinNoiseTextureMatrix, IN.TexCoords);
 
 	IN.Normal *= IN.Normal; //Makes the components sum to 1
 	
 	//Retrieve the 3 samples
-	float permutationValueXY = tex1D(permutationMap, IN.TexCoords.xy).r * abs(IN.Normal.z);
-	float permutationValueYZ = tex1D(permutationMap, IN.TexCoords.yz).r * abs(IN.Normal.x);
-	float permutationValueXZ = tex1D(permutationMap, IN.TexCoords.xz).r * abs(IN.Normal.y);	
-	float permutationValue = permutationValueXY + permutationValueYZ + permutationValueXZ;
+	//float permutationValueXY = tex1D(permutationMap, IN.TexCoords.xy).r * abs(IN.Normal.z);
+	//float permutationValueYZ = tex1D(permutationMap, IN.TexCoords.yz).r * abs(IN.Normal.x);
+	//float permutationValueXZ = tex1D(permutationMap, IN.TexCoords.xz).r * abs(IN.Normal.y);	
+	//float permutationValue = permutationValueXY + permutationValueYZ + permutationValueXZ;
 	
 	//Retrieve the 3 samples
-	float3 gradientValueXY = tex1D(gradientMap, IN.TexCoords.xy).rgb * abs(IN.Normal.z);
-	float3 gradientValueYZ = tex1D(gradientMap, IN.TexCoords.yz).rgb * abs(IN.Normal.x);
-	float3 gradientValueXZ = tex1D(gradientMap, IN.TexCoords.zy).rgb * abs(IN.Normal.y);	
-	float3 gradientValue = gradientValueXY + gradientValueYZ + gradientValueXZ;
+	//float3 gradientValueXY = tex1D(gradientMap, IN.TexCoords.xy).rgb * abs(IN.Normal.z);
+	//float3 gradientValueYZ = tex1D(gradientMap, IN.TexCoords.yz).rgb * abs(IN.Normal.x);
+	//float3 gradientValueXZ = tex1D(gradientMap, IN.TexCoords.zy).rgb * abs(IN.Normal.y);	
+	//float3 gradientValue = gradientValueXY + gradientValueYZ + gradientValueXZ;
 	
 	//Retrieve the 3 samples
-	float3 innerValueXY = tex2D(innerMap, IN.TexCoords.xy).rgb * abs(IN.Normal.z);
-	float3 innerValueYZ = tex2D(innerMap, IN.TexCoords.yz).rgb * abs(IN.Normal.x);
-	float3 innerValueXZ = tex2D(innerMap, IN.TexCoords.xz).rgb * abs(IN.Normal.y);	
+	float3 innerValueXY = tex2D(innerMap, coreInnerTexCoords.xy).rgb * abs(IN.Normal.z);
+	float3 innerValueYZ = tex2D(innerMap, coreInnerTexCoords.yz).rgb * abs(IN.Normal.x);
+	float3 innerValueXZ = tex2D(innerMap, coreInnerTexCoords.xz).rgb * abs(IN.Normal.y);	
 	float3 innerValue = innerValueXY + innerValueYZ + innerValueXZ;
 	
 	//Retrieve the 3 samples
-	float3 outerValueXY = tex2D(outerMap, IN.TexCoords.xy).rgb * abs(IN.Normal.z);
-	float3 outerValueYZ = tex2D(outerMap, IN.TexCoords.yz).rgb * abs(IN.Normal.x);
-	float3 outerValueXZ = tex2D(outerMap, IN.TexCoords.xz).rgb * abs(IN.Normal.y);	
+	float3 outerValueXY = tex2D(outerMap, coreOuterTexCoords.xy).rgb * abs(IN.Normal.z);
+	float3 outerValueYZ = tex2D(outerMap, coreOuterTexCoords.yz).rgb * abs(IN.Normal.x);
+	float3 outerValueXZ = tex2D(outerMap, coreOuterTexCoords.xz).rgb * abs(IN.Normal.y);	
 	float3 outerValue = outerValueXY + outerValueYZ + outerValueXZ;
 	
 	
 	
-	float noiseValue = inoise(IN.TexCoords.xyz);
+	float noiseValue = inoise(perlinNoiseTexCoords.xyz);
 	noiseValue = abs(noiseValue);
 	
 	//float4 colourMapValue = float4(noiseValue, noiseValue, noiseValue, 1.0f);

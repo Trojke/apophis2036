@@ -7,6 +7,8 @@ fragment_program EarthCoreFP cg
 	default_params
     {
 		param_named_auto ambientLightColor ambient_light_colour
-		param_named textureMatrix matrix4x4 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0
+		param_named coreInnerTextureMatrix matrix4x4 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0
+		param_named coreOuterTextureMatrix matrix4x4 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0
+		param_named perlinNoiseTextureMatrix matrix4x4 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0
 	}
 }

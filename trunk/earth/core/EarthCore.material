@@ -16,7 +16,9 @@ material EarthCoreMaterial
 			
 			fragment_program_ref EarthCoreFP
 			{
-				param_named textureMatrix matrix4x4 0.0625 0.0 0.0 0.0 0.0 0.0625 0.0 0.0 0.0 0.0 0.0625 0.0 0.0 0.0 0.0 1.0
+				param_named coreInnerTextureMatrix matrix4x4 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 1.0
+				param_named coreOuterTextureMatrix matrix4x4 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 1.0
+				param_named perlinNoiseTextureMatrix matrix4x4 0.1 0.0 0.0 0.0 0.0 0.1 0.0 0.0 0.0 0.0 0.1 0.0 0.0 0.0 0.0 1.0
 			}	
 
 			texture_unit
