@@ -27,7 +27,7 @@ float grad(float x, float3 p)
 
 float grad(float x, float4 p)
 {
-	return dot(tex1D(gradSampler4d, x), p);
+	return dot(tex1D(gradSampler, x), p);
 }
 
 float inoise(float3 p)
@@ -104,7 +104,7 @@ float inoise4d(float4 p)
                                    grad(perm(BBB+one), p + float4(-1, -1, -1, -1) ), f.x), f.y), f.z), f.w);
 }
 
-float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permutationMap : TEXUNIT0, uniform sampler1D gradientMap : TEXUNIT1, uniform sampler2D innerMap : TEXUNIT2, uniform sampler2D outerMap : TEXUNIT3, uniform float4x4 coreInnerTextureMatrix, uniform float4x4 coreOuterTextureMatrix, uniform float4x4 perlinNoiseTextureMatrix) : COLOR
+float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permutationMap : TEXUNIT0, uniform sampler1D gradientMap : TEXUNIT1, uniform sampler2D innerMap : TEXUNIT2, uniform sampler2D outerMap : TEXUNIT3, uniform float4x4 coreInnerTextureMatrix, uniform float4x4 coreOuterTextureMatrix, uniform float4x4 perlinNoiseTextureMatrix, uniform float currentTime) : COLOR
 {		
 	permSampler = permutationMap;
 	gradSampler = gradientMap;
@@ -144,13 +144,13 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 	float3 outerValueXY = tex2D(outerMap, coreOuterTexCoords.xy).rgb * abs(IN.Normal.z);
 	float3 outerValueYZ = tex2D(outerMap, coreOuterTexCoords.yz).rgb * abs(IN.Normal.x);
 	float3 outerValueXZ = tex2D(outerMap, coreOuterTexCoords.xz).rgb * abs(IN.Normal.y);	
-	float3 outerValue = outerValueXY + outerValueYZ + outerValueXZ;
+	float3 outerValue = outerValueXY + outerValueYZ + outerValueXZ;	
 	
-	
-	
-	/*float noiseValue = inoise4d(float4(perlinNoiseTexCoords.xyz, 1.0));*/
-	float noiseValue = inoise(perlinNoiseTexCoords.xyz);
+	float noiseValue = inoise4d(float4(perlinNoiseTexCoords.xyz, currentTime));
+	//float noiseValue = inoise(perlinNoiseTexCoords.xyz);
 	noiseValue = abs(noiseValue);
+	
+	/*noiseValue *= currentTime;*/
 	
 	//float4 colourMapValue = float4(noiseValue, noiseValue, noiseValue, 1.0f);
 	
@@ -161,6 +161,7 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 		colourMapValue = float4(outerValue, 1.0f);
 		
 	colourMapValue *= IN.DiffuseLightColor + ambientLightColor;
-	//colourMapValue *= IN.Material.y;
+	//colourMapValue *= 0.000001f;
+	//colourMapValue += float4(currentTime, 1.0 - currentTime, 0.0, 1.0);
 	return colourMapValue;
 }
