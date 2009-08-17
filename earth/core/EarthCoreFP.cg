@@ -9,6 +9,12 @@ float3 fade(float3 t)
 //	return t * t * (3 - 2 * t); // old curve
 }
 
+float4 fade(float4 t)
+{
+	return t * t * t * (t * (t * 6 - 15) + 10); // new curve
+//	return t * t * (3 - 2 * t); // old curve
+}
+
 float perm(float x)
 {
 	return tex1D(permSampler, x).x;
@@ -17,6 +23,11 @@ float perm(float x)
 float grad(float x, float3 p)
 {
 	return dot(tex1D(gradSampler, x*16).xyz, p);
+}
+
+float grad(float x, float4 p)
+{
+	return dot(tex1D(gradSampler4d, x), p);
 }
 
 float inoise(float3 p)
@@ -47,6 +58,50 @@ float inoise(float3 p)
                              grad(perm(AA.z+one), p + float3(-1, 0, -1) ), f.x),
                        lerp( grad(perm(AA.y+one), p + float3(0, -1, -1) ),
                              grad(perm(AA.w+one), p + float3(-1, -1, -1) ), f.x), f.y), f.z);
+}
+
+float inoise4d(float4 p)
+{
+	float4 P = fmod(floor(p), 256.0);	// FIND UNIT HYPERCUBE THAT CONTAINS POINT
+  	p -= floor(p);                      // FIND RELATIVE X,Y,Z OF POINT IN CUBE.
+	float4 f = fade(p);                 // COMPUTE FADE CURVES FOR EACH OF X,Y,Z, W
+	P = P / 256.0;
+	const float one = 1.0 / 256.0;
+	
+    // HASH COORDINATES OF THE 16 CORNERS OF THE HYPERCUBE
+  	float A = perm(P.x) + P.y;
+  	float AA = perm(A) + P.z;
+  	float AB = perm(A + one) + P.z;
+  	float B =  perm(P.x + one) + P.y;
+  	float BA = perm(B) + P.z;
+  	float BB = perm(B + one) + P.z;
+
+	float AAA = perm(AA)+P.w, AAB = perm(AA+one)+P.w;
+    float ABA = perm(AB)+P.w, ABB = perm(AB+one)+P.w;
+    float BAA = perm(BA)+P.w, BAB = perm(BA+one)+P.w;
+    float BBA = perm(BB)+P.w, BBB = perm(BB+one)+P.w;
+
+	// INTERPOLATE DOWN
+  	return lerp(
+  				lerp( lerp( lerp( grad(perm(AAA), p ),  
+                                  grad(perm(BAA), p + float4(-1, 0, 0, 0) ), f.x),
+                            lerp( grad(perm(ABA), p + float4(0, -1, 0, 0) ),
+                                  grad(perm(BBA), p + float4(-1, -1, 0, 0) ), f.x), f.y),
+                                  
+                      lerp( lerp( grad(perm(AAB), p + float4(0, 0, -1, 0) ),
+                                  grad(perm(BAB), p + float4(-1, 0, -1, 0) ), f.x),
+                            lerp( grad(perm(ABB), p + float4(0, -1, -1, 0) ),
+                                  grad(perm(BBB), p + float4(-1, -1, -1, 0) ), f.x), f.y), f.z),
+                            
+  				 lerp( lerp( lerp( grad(perm(AAA+one), p + float4(0, 0, 0, -1)),
+                                   grad(perm(BAA+one), p + float4(-1, 0, 0, -1) ), f.x),
+                             lerp( grad(perm(ABA+one), p + float4(0, -1, 0, -1) ),
+                                   grad(perm(BBA+one), p + float4(-1, -1, 0, -1) ), f.x), f.y),
+                                   
+                       lerp( lerp( grad(perm(AAB+one), p + float4(0, 0, -1, -1) ),
+                                   grad(perm(BAB+one), p + float4(-1, 0, -1, -1) ), f.x),
+                             lerp( grad(perm(ABB+one), p + float4(0, -1, -1, -1) ),
+                                   grad(perm(BBB+one), p + float4(-1, -1, -1, -1) ), f.x), f.y), f.z), f.w);
 }
 
 float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permutationMap : TEXUNIT0, uniform sampler1D gradientMap : TEXUNIT1, uniform sampler2D innerMap : TEXUNIT2, uniform sampler2D outerMap : TEXUNIT3, uniform float4x4 coreInnerTextureMatrix, uniform float4x4 coreOuterTextureMatrix, uniform float4x4 perlinNoiseTextureMatrix) : COLOR
@@ -93,6 +148,7 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 	
 	
 	
+	/*float noiseValue = inoise4d(float4(perlinNoiseTexCoords.xyz, 1.0));*/
 	float noiseValue = inoise(perlinNoiseTexCoords.xyz);
 	noiseValue = abs(noiseValue);
 	
