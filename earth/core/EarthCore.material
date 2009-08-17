@@ -19,6 +19,7 @@ material EarthCoreMaterial
 				param_named coreInnerTextureMatrix matrix4x4 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 1.0
 				param_named coreOuterTextureMatrix matrix4x4 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 1.0
 				param_named perlinNoiseTextureMatrix matrix4x4 0.1 0.0 0.0 0.0 0.0 0.1 0.0 0.0 0.0 0.0 0.1 0.0 0.0 0.0 0.0 1.0
+				param_named_auto currentTime time 0.1
 			}	
 
 			texture_unit
@@ -30,7 +31,8 @@ material EarthCoreMaterial
 
 			texture_unit
 			{
-				texture gradients3d.png 1d PF_R8G8B8 
+				//texture gradients3d.png 1d PF_R8G8B8 
+				texture gradients4d.png 1d PF_A8R8G8B8
 				tex_address_mode wrap clamp
 				filtering point point none
 			}				
