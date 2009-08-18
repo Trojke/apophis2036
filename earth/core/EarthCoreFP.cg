@@ -22,12 +22,16 @@ float perm(float x)
 
 float grad(float x, float3 p)
 {
-	return dot(tex1D(gradSampler, x*16).xyz, p);
+	float3 sample = tex1D(gradSampler, x).xyz;
+	sample = (sample * 2.0) - 1.0; //Because for storing in our image we converted to the 0.0-1.0 range
+	return dot(sample, p);
 }
 
 float grad(float x, float4 p)
 {
-	return dot(tex1D(gradSampler, x), p);
+	float4 sample = tex1D(gradSampler, x);
+	sample = (sample * 2.0) - 1.0; //Because for storing in our image we converted to the 0.0-1.0 range
+	return dot(sample, p);
 }
 
 float inoise(float3 p)
@@ -114,25 +118,12 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 	
 	distance = 1.0f - distance;
 	distance *= distance;
-	//distance = 1.0f / distance;
 	
 	float4 coreInnerTexCoords = mul(coreInnerTextureMatrix, IN.TexCoords);
 	float4 coreOuterTexCoords = mul(coreOuterTextureMatrix, IN.TexCoords);
 	float4 perlinNoiseTexCoords = mul(perlinNoiseTextureMatrix, IN.TexCoords);
 
 	IN.Normal *= IN.Normal; //Makes the components sum to 1
-	
-	//Retrieve the 3 samples
-	//float permutationValueXY = tex1D(permutationMap, IN.TexCoords.xy).r * abs(IN.Normal.z);
-	//float permutationValueYZ = tex1D(permutationMap, IN.TexCoords.yz).r * abs(IN.Normal.x);
-	//float permutationValueXZ = tex1D(permutationMap, IN.TexCoords.xz).r * abs(IN.Normal.y);	
-	//float permutationValue = permutationValueXY + permutationValueYZ + permutationValueXZ;
-	
-	//Retrieve the 3 samples
-	//float3 gradientValueXY = tex1D(gradientMap, IN.TexCoords.xy).rgb * abs(IN.Normal.z);
-	//float3 gradientValueYZ = tex1D(gradientMap, IN.TexCoords.yz).rgb * abs(IN.Normal.x);
-	//float3 gradientValueXZ = tex1D(gradientMap, IN.TexCoords.zy).rgb * abs(IN.Normal.y);	
-	//float3 gradientValue = gradientValueXY + gradientValueYZ + gradientValueXZ;
 	
 	//Retrieve the 3 samples
 	float3 innerValueXY = tex2D(innerMap, coreInnerTexCoords.xy).rgb * abs(IN.Normal.z);
@@ -150,10 +141,6 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 	//float noiseValue = inoise(perlinNoiseTexCoords.xyz);
 	noiseValue = abs(noiseValue);
 	
-	/*noiseValue *= currentTime;*/
-	
-	//float4 colourMapValue = float4(noiseValue, noiseValue, noiseValue, 1.0f);
-	
 	float4 colourMapValue;
 	if(noiseValue < distance)
 		colourMapValue = float4(innerValue, 1.0f);
@@ -161,7 +148,6 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 		colourMapValue = float4(outerValue, 1.0f);
 		
 	colourMapValue *= IN.DiffuseLightColor + ambientLightColor;
-	//colourMapValue *= 0.000001f;
-	//colourMapValue += float4(currentTime, 1.0 - currentTime, 0.0, 1.0);
+	
 	return colourMapValue;
 }
