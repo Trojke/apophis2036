@@ -4,8 +4,6 @@
 
 float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permutationMap : TEXUNIT0, uniform sampler1D gradientMap : TEXUNIT1, uniform sampler2D innerMap : TEXUNIT2, uniform sampler2D outerMap : TEXUNIT3, uniform float4x4 coreInnerTextureMatrix, uniform float4x4 coreOuterTextureMatrix, uniform float4x4 perlinNoiseTextureMatrix, uniform float currentTime) : COLOR
 {		
-	/*permSampler = permutationMap;
-	gradSampler = gradientMap;*/
 
 	float3 toCentre = float3(256.0f, 256.0f, 256.0f) - IN.TexCoords.xyz;
 	float distance = length(toCentre) / 256.0f;
