@@ -24,15 +24,15 @@ material EarthCoreMaterial
 
 			texture_unit
 			{
-				texture permutation.png 1d PF_L8
+				texture PerlinPermutations.png 1d PF_L8
 				tex_address_mode wrap clamp
 				filtering point point none
 			}
 
 			texture_unit
 			{
-				//texture gradients3d.png 1d PF_R8G8B8 
-				texture gradients4d.png 1d PF_A8R8G8B8
+				//texture PerlinGradients3d.png 1d PF_R8G8B8 
+				texture PerlinGradients4d.png 1d PF_A8R8G8B8
 				tex_address_mode wrap clamp
 				filtering point point none
 			}				
