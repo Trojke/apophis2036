@@ -2,13 +2,13 @@
 
 #include "PerlinNoise.cg"
 
-float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permutationMap : TEXUNIT0, uniform sampler1D gradientMap : TEXUNIT1, uniform sampler2D innerMap : TEXUNIT2, uniform sampler2D outerMap : TEXUNIT3, uniform float4x4 coreInnerTextureMatrix, uniform float4x4 coreOuterTextureMatrix, uniform float4x4 perlinNoiseTextureMatrix, uniform float currentTime) : COLOR
+float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permutationMap : TEXUNIT0, uniform sampler1D gradientMap : TEXUNIT1, uniform sampler1D lavaGradient : TEXUNIT2, uniform sampler2D outerMap : TEXUNIT3, uniform float4x4 coreInnerTextureMatrix, uniform float4x4 coreOuterTextureMatrix, uniform float4x4 perlinNoiseTextureMatrix, uniform float currentTime) : COLOR
 {		
 
 	float3 toCentre = float3(256.0f, 256.0f, 256.0f) - IN.TexCoords.xyz;
 	float distance = length(toCentre) / 256.0f;
 	
-	distance = 1.0f - distance;
+	//distance = 1.0f - distance;
 	
 	float4 coreInnerTexCoords = mul(coreInnerTextureMatrix, IN.TexCoords);
 	float4 coreOuterTexCoords = mul(coreOuterTextureMatrix, IN.TexCoords);
@@ -17,10 +17,12 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 	IN.Normal *= IN.Normal; //Makes the components sum to 1
 	
 	//Retrieve the 3 samples
-	float3 innerValueXY = tex2D(innerMap, coreInnerTexCoords.xy).rgb * abs(IN.Normal.z);
+	/*float3 innerValueXY = tex2D(innerMap, coreInnerTexCoords.xy).rgb * abs(IN.Normal.z);
 	float3 innerValueYZ = tex2D(innerMap, coreInnerTexCoords.yz).rgb * abs(IN.Normal.x);
 	float3 innerValueXZ = tex2D(innerMap, coreInnerTexCoords.xz).rgb * abs(IN.Normal.y);	
 	float3 innerValue = innerValueXY + innerValueYZ + innerValueXZ;
+	
+	innerValue *= 0.000001;*/
 	
 	//Retrieve the 3 samples
 	float3 outerValueXY = tex2D(outerMap, coreOuterTexCoords.xy).rgb * abs(IN.Normal.z);
@@ -28,21 +30,49 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 	float3 outerValueXZ = tex2D(outerMap, coreOuterTexCoords.xz).rgb * abs(IN.Normal.y);	
 	float3 outerValue = outerValueXY + outerValueYZ + outerValueXZ;	
 	
-	float noiseValue = perlinNoise4d(float4(perlinNoiseTexCoords.xyz, currentTime), permutationMap, gradientMap);
-	//float noiseValue = perlinNoise3d(perlinNoiseTexCoords.xyz, permutationMap, gradientMap);
-	noiseValue = abs(noiseValue);
+	float noiseValue = abs(perlinNoise4d(float4(perlinNoiseTexCoords.xyz * 1.05, currentTime), permutationMap, gradientMap)) * 1.0; //Weights sum to 1
+	noiseValue += abs(perlinNoise4d(float4(perlinNoiseTexCoords.xyz * 1.97, currentTime), permutationMap, gradientMap)) * 0.5;
+	noiseValue += abs(perlinNoise4d(float4(perlinNoiseTexCoords.xyz * 4.02, currentTime), permutationMap, gradientMap)) * 0.25;
+	noiseValue += abs(perlinNoise4d(float4(perlinNoiseTexCoords.xyz * 7.95, currentTime), permutationMap, gradientMap)) * 0.125;
+	
+	
+	
+	
+	//noiseValue = abs(noiseValue);
+	
+	//innerValue += float3(noiseValue, noiseValue, noiseValue);
+	
+	float3 innerValue = tex1D(lavaGradient, noiseValue);
+	
+	float noiseScaledZeroToOne = noiseValue / 1.875; //1.875 = 1.0 + 0.5 + 0.25 + 0.125
 	
 	//Compress and shift the transition
 	//noiseValue *= 0.1;
 	//noiseValue += 0.1;
 	
+	/*distance  = distance * 0.1;
+	distance = distance + 0.8;*/
+	
+	if (distance < 0.7)
+		distance = 0.0;
+	else if( distance < 0.9)
+	{
+		distance  = distance  - 0.7;
+		distance *= 5.0;
+	}
+	else
+		distance = 1.0;
+	
 	float4 colourMapValue;
-	if(noiseValue < distance)
+	if(noiseScaledZeroToOne < (1.0 - distance))
 		colourMapValue = float4(innerValue, 1.0f);
 	else
 		colourMapValue = float4(outerValue, 1.0f);
 		
 	colourMapValue *= IN.DiffuseLightColor + ambientLightColor;
+	
+	//colourMapValue *= 0.000001;
+	//colourMapValue += noiseValue;
 	
 	return colourMapValue;
 }
