@@ -39,7 +39,8 @@ material EarthCoreMaterial
 
 			texture_unit
 			{
-				texture EarthCoreInner.png 2d
+				texture LavaGradient.png 1d
+				tex_address_mode clamp
 			}	
 
 			texture_unit
