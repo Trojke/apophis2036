@@ -16,7 +16,6 @@ material EarthCoreMaterial
 			
 			fragment_program_ref EarthCoreFP
 			{
-				param_named coreInnerTextureMatrix matrix4x4 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 1.0
 				param_named coreOuterTextureMatrix matrix4x4 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 1.0
 				param_named perlinNoiseTextureMatrix matrix4x4 0.1 0.0 0.0 0.0 0.0 0.1 0.0 0.0 0.0 0.0 0.1 0.0 0.0 0.0 0.0 1.0
 				param_named_auto currentTime time 0.2
@@ -42,6 +41,13 @@ material EarthCoreMaterial
 				texture LavaGradient.png 1d
 				tex_address_mode clamp clamp
 			}	
+			
+			texture_unit
+			{
+				texture LavaToRockControl.png 1d PF_L8
+				tex_address_mode wrap clamp
+				filtering point point none
+			}
 
 			texture_unit
 			{
