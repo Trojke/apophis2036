@@ -62,12 +62,18 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 	}
 	else
 		distance = 1.0;
+		
+	float interpolationVal = min(1.0, noiseScaledZeroToOne + distance);
+	/*if(interpolationVal < 0.0)
+		interpolationVal = 0.0;
+	if(interpolationVal > 1.0)
+		interpolationVal = 1.0;*/
 	
-	float4 colourMapValue;
-	if(noiseScaledZeroToOne < (1.0 - distance))
+	float4 colourMapValue = float4(lerp(innerValue, outerValue, interpolationVal), 1.0);
+	/*if(noiseScaledZeroToOne < (1.0 - distance))
 		colourMapValue = float4(innerValue, 1.0f);
 	else
-		colourMapValue = float4(outerValue, 1.0f);
+		colourMapValue = float4(outerValue, 1.0f);*/
 		
 	colourMapValue *= IN.DiffuseLightColor + ambientLightColor;
 	

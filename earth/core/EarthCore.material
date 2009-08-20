@@ -19,7 +19,7 @@ material EarthCoreMaterial
 				param_named coreInnerTextureMatrix matrix4x4 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 1.0
 				param_named coreOuterTextureMatrix matrix4x4 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 0.01 0.0 0.0 0.0 0.0 1.0
 				param_named perlinNoiseTextureMatrix matrix4x4 0.1 0.0 0.0 0.0 0.0 0.1 0.0 0.0 0.0 0.0 0.1 0.0 0.0 0.0 0.0 1.0
-				param_named_auto currentTime time 0.1
+				param_named_auto currentTime time 0.2
 			}	
 
 			texture_unit
@@ -40,7 +40,7 @@ material EarthCoreMaterial
 			texture_unit
 			{
 				texture LavaGradient.png 1d
-				tex_address_mode clamp
+				tex_address_mode clamp clamp
 			}	
 
 			texture_unit
