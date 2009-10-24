@@ -4,6 +4,12 @@
 
 float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permutationMap : TEXUNIT0, uniform sampler1D gradientMap : TEXUNIT1, uniform sampler1D lavaGradient : TEXUNIT2, uniform sampler1D lavaToRockControl : TEXUNIT3, uniform sampler2D outerMap : TEXUNIT4, uniform float4x4 coreOuterTextureMatrix, uniform float4x4 perlinNoiseTextureMatrix, uniform float currentTime) : COLOR
 {		
+	//Make sure material zero is drawn black.
+	if(IN.Material.x < 0.5)
+	{
+		return float4(0.0,0.0,0.0,1.0);
+	}
+	
 	//Compute the distance from the centre of the earth, of a scale of 0.0 - 1.0.
 	float3 toCentre = float3(256.0f, 256.0f, 256.0f) - IN.TexCoords.xyz;
 	float distance = length(toCentre) / 256.0f;
@@ -43,6 +49,9 @@ float4 main(v2f IN,  uniform float4 ambientLightColor, uniform sampler1D permuta
 		
 	//Apply lighting.
 	colourMapValue *= IN.DiffuseLightColor + ambientLightColor;
+	
+	//For blending beween materials
+	colourMapValue *= IN.Material.y;
 	
 	//Return result.
 	return colourMapValue;
